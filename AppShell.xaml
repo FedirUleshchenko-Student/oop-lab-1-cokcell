@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="oop_lab_1_cokcell.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:oop_lab_1_cokcell.Pages"
+    Title="oop_lab_1_cokcell">
+
+    <ShellContent
+        Title="Simple 1 Formula Parser"
+        ContentTemplate="{DataTemplate pages:ParserTest1}"
+        Route="Expression Parcer Calculator" />
+
+</Shell>
