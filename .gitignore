@@ -1,0 +1,32 @@
+# 1.	Ignore everything
+*
+
+# 2.	Un-ignore directories so git can traverse them.
+#		This is necessary so git can find the files to un-ignore below.
+!*/
+
+# 3.	Un-ignore the allowed file extensions
+!*.cs
+!*.xaml
+!*.h
+!*.jpg
+!*.jpeg
+!*.png
+!*.in
+!*.out
+!*.ans
+!*.md
+!*.txt
+
+# 4.	Ignore specific package-related directories
+#		of Visual Studio MAUI creation
+/bin
+/obj
+/Platforms
+
+#		I don't really know if you should ignore Resources, so no
+#/Resources
+
+# 5.	Un-ignore this file itself so it can be committed
+!/.gitignore
+
