@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="oop_lab_1_cokcell.Pages.ParserTest1"
+             Title="Parser of 1 formula">
+    <VerticalStackLayout>
+        <Entry x:Name="inputField"
+            Placeholder="Enter text"
+            Completed="OnEntryCompleted" />
+
+        <!-- Temp - move 'FontFamily' to the error View -->
+        <Label x:Name="errorView"
+            FontFamily="Consolas"
+            FontSize="15"
+        />
+        <Label x:Name="answerView"
+            TextColor="BlueViolet"
+            FontSize="25"
+        />
+        <Label x:Name="calculatedValueView"
+            TextColor="Green"
+            FontSize="35"
+        />
+    </VerticalStackLayout>
+</ContentPage>
