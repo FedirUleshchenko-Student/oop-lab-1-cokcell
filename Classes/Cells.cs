@@ -237,7 +237,20 @@ namespace oop_lab_1_cokcell.Classes.Cells
                         throw new Exception($"Cannot locate cell: {CellId.getStringSafe(id)}");
                     return c.GetValue(true);
                 }, out foundation);
-                    
+
+                foreach (var cellId in foundation)
+                {
+                    if(cellId.Equals(Id))
+                        throw new Exception($"Self-recursive reference occured");
+                }
+
+                // Test move, for 1 -> 2 -> 3 -> 1 situation
+                // Setting up new linkables for recalc
+                foreach (var cellId in foundation)
+                {
+                    var cell = currTable.PullCell(cellId);
+                    cell.onRecalculation += RecalculationForced;
+                }
 
                 foreach (var cellId in foundation)
                 {
@@ -246,12 +259,12 @@ namespace oop_lab_1_cokcell.Classes.Cells
                         throw new Exception($"New recursive reference occured, relays on [{cellId}]");
                 }
 
-                // Adding new linkables
+                // Test move, for 1 -> 2 -> 3 -> 1 situation
+                // Double-linking new linkables
                 foreach (var cellId in foundation)
                 {
                     var cell = currTable.PullCell(cellId);
                     cell.onErrorThrown += OnOccuredError;
-                    cell.onRecalculation += RecalculationForced;
                 }
 
                 recalculationNeed = true;
