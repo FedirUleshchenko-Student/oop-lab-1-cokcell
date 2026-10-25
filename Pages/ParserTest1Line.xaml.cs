@@ -2,6 +2,7 @@ using System.IO;
 using System.Numerics;
 using oop_lab_1_cokcell.Classes.ExpressionNodes;
 using oop_lab_1_cokcell.Classes.Parser;
+using oop_lab_1_cokcell.Classes.Cells;
 
 namespace oop_lab_1_cokcell.Pages
 {
@@ -22,8 +23,8 @@ namespace oop_lab_1_cokcell.Pages
                 //Expression? exp = null;
                 //exp = ExpressionParser.GetExpression(((Entry)sender).Text);
                 //outputView.Text = (exp?.calculate()).ToString();
-
-                var testReader = ExpressionParser.Parse(((Entry)sender).Text);
+                var temp = new List<CellId>();
+                var testReader = ExpressionParser.Parse(((Entry)sender).Text, (id) => 0, out temp);
                 errorView.Text = "";
                 answerView.Text = testReader.ToString();
                 calculatedValueView.Text = testReader.Calculate().ToString();

@@ -122,6 +122,13 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
         public override int Priority => 2;
         public override int? NeededArgs => 2;
 
+        public DivideNode() {}
+        public DivideNode(List<Expression> _args)
+        {
+            Arguments = _args;
+            CalculationCheck();
+        }
+
         protected override BigInteger calculationLogic()
         {
             if ((BigInteger)Arguments[1] == 0)
@@ -168,6 +175,43 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
         protected override BigInteger calculationLogic()
         {
             return BigInteger.Abs(Arguments[0]);
+        }
+    }
+
+    internal class ModuleNode : OperationNode
+    {
+        public override string NameLog => "module";
+
+        public override int? NeededArgs => 2;
+        public ModuleNode(List<Expression> _args)
+        {
+            Arguments = _args;
+            CalculationCheck();
+        }
+
+        protected override BigInteger calculationLogic()
+        {
+            return (BigInteger)Arguments[0] % Arguments[1];
+        }
+    }
+
+
+    internal class PowerNode : OperationNode
+    {
+        public override string NameLog => "power";
+
+        public override int Priority => 2;
+        public override int? NeededArgs => 2;
+
+        public PowerNode(List<Expression> _args)
+        {
+            Arguments = _args;
+            CalculationCheck();
+        }
+
+        protected override BigInteger calculationLogic()
+        {
+            return BigInteger.Pow(Arguments[0], (int)((BigInteger)Arguments[1]));
         }
     }
 }

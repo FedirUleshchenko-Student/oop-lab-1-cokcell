@@ -4,11 +4,21 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:oop_lab_1_cokcell.Pages"
-    Title="oop_lab_1_cokcell">
+    Title="CokCell">
 
     <ShellContent
         Title="Simple 1 Formula Parser"
         ContentTemplate="{DataTemplate pages:ParserTest1}"
         Route="Expression Parcer Calculator" />
+
+    <ShellContent
+    Title="Cell Id Checker"
+    ContentTemplate="{DataTemplate pages:CellIdStringCheck}"
+    Route="Cell Id Checker" />
+
+    <ShellContent
+    Title="Simple Table Test"
+    ContentTemplate="{DataTemplate pages:TableTester}"
+    Route="Simple Table Test" />
 
 </Shell>

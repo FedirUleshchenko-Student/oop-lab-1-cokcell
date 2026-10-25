@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="oop_lab_1_cokcell.Pages.CellIdStringCheck"
+             Title="CellIdStringCheck">
+    <VerticalStackLayout
+        Padding="30,0"
+        Spacing="25">
+        <Button
+            x:Name="CellActivator"
+            Text="Test Next"
+            Clicked="Test1"
+        />
+
+        <Button
+            x:Name="allCellActivator"
+            Text="Test All"
+            Clicked="TestAll"
+        />
+
+        <Button
+            x:Name="Recreate"
+            Text="To empty cell"
+            Clicked="EmptyCell"
+        />
+
+        <ScrollView>
+            <Label 
+                x:Name="answerView"
+                Text=""
+                FontSize="10"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center" />
+            </ScrollView>
+    </VerticalStackLayout>
+</ContentPage>

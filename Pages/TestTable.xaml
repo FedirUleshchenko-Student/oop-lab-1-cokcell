@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="oop_lab_1_cokcell.Pages.TableTester"
+             Title="Table Test">
+    <VerticalStackLayout>
+        <Entry x:Name="inputField1"
+            Placeholder="Enter text"
+            Completed="OnEntryCompleted1" />
+        <Label x:Name="answerView1"
+            TextColor="BlueViolet"
+            FontFamily="Consolas"
+            FontSize="15" />
+        <Entry x:Name="inputField2"
+            Placeholder="Enter text"
+            Completed="OnEntryCompleted2" />
+        <Label x:Name="answerView2"
+            TextColor="BlueViolet"
+            FontFamily="Consolas"
+            FontSize="15" />
+        <Entry x:Name="inputField3"
+            Placeholder="Enter text"
+            Completed="OnEntryCompleted3" />
+        <Label x:Name="answerView3"
+            TextColor="BlueViolet"
+            FontFamily="Consolas"
+            FontSize="15" />
+    </VerticalStackLayout>
+</ContentPage>

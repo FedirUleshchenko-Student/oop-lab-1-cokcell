@@ -1,21 +1,24 @@
-﻿using System;
+﻿using Microsoft.Maui.Controls;
+using oop_lab_1_cokcell.Classes.Cells;
+using oop_lab_1_cokcell.Classes.Exceptions;
+using oop_lab_1_cokcell.Classes.ExpressionNodes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using System.Threading.Tasks;
-
-using oop_lab_1_cokcell.Classes.ExpressionNodes;
 
 namespace oop_lab_1_cokcell.Classes.Parser
 {
     internal static class ExpressionParser
     {
-        private const string AllowedMathSymbols = "+-*/,";
+        private const string AllowedMathSymbols = "+-*/,^";
         private static Dictionary<string, Func<Expression>> notParenthesesOperationCodesUnary =
         new Dictionary<string, Func<Expression>>{
-                    {"+", () => new UnaryPlusNode() },
-                    {"-", () => new UnaryMinusNode() },
+                {"+", () => new UnaryPlusNode() },
+                {"-", () => new UnaryMinusNode() },
         };
 
         private static Dictionary<string, Func<Expression>> notParenthesesOperationCodes =
@@ -29,50 +32,8 @@ namespace oop_lab_1_cokcell.Classes.Parser
         private static Dictionary<string, Func<List<Expression>, Expression>> parenthesesOperationCodes =
             new Dictionary<string, Func<List<Expression>, Expression>>{
                 {"abs", args => new AbsoluteNode(args) },
+                {"mod", args => new ModuleNode(args) },
             };
-
-        public class SyntaxError : Exception
-        {
-            int? pos = null;
-            int? pos2 = null;
-            string? org = null;
-            string mes;
-
-
-
-            public SyntaxError(string message)
-            {
-                this.mes = message;
-            }
-
-            public SyntaxError(string message, string original, int errorPositon)
-                : this(message)
-            {
-                this.pos = errorPositon;
-                this.org = original;
-            }
-
-            public SyntaxError(string message, string original, int position1, int position2)
-                : this(message, original, position1)
-            {
-                this.pos2 = position2;
-            }
-
-            public override string Message
-            {
-                get {
-                    if (pos.HasValue && pos2.HasValue && pos.Value < pos2.Value)
-                        return  $"{org}\n{new string(' ', pos.Value)}^" +
-                                $"{new string('~', pos2.Value - pos.Value - 1)}^\n" +
-                                $"{mes}\n";
-                    else if (pos.HasValue)
-                        return  $"{org}\n{new string(' ', pos.Value)}^\n{mes}\n";
-                    else
-                        return  $"{mes}\n";
-                }
-            }
-
-        }
 
         private static void SkipWhitespace(string s, ref int p)
         {
@@ -128,39 +89,47 @@ namespace oop_lab_1_cokcell.Classes.Parser
         }
 
         private static Expression ConvertStringIntoObject(string obj,
-            string globalString, ref int globalP, bool isUnary, out bool isValueNode)
+            string globalString, ref int globalP, TableAction cellReferenceInit,
+            bool isUnary, out bool isValueNode, List<CellId> linkables)
         {
             if(isUnary)
             {
-                if (notParenthesesOperationCodesUnary.ContainsKey(obj))
+                if (notParenthesesOperationCodesUnary.ContainsKey(obj.ToLower()))
                 {
                     isValueNode = false;
-                    return notParenthesesOperationCodesUnary[obj]();
+                    return notParenthesesOperationCodesUnary[obj.ToLower()]();
                 }
             }
 
-            if (notParenthesesOperationCodes.ContainsKey(obj))
+            if (notParenthesesOperationCodes.ContainsKey(obj.ToLower()))
             {
                 isValueNode = false;
-                return notParenthesesOperationCodes[obj]();
+                return notParenthesesOperationCodes[obj.ToLower()]();
             }
 
-            if (parenthesesOperationCodes.ContainsKey(obj))
+            if (parenthesesOperationCodes.ContainsKey(obj.ToLower()))
             {
                 isValueNode = true;
-                return parenthesesOperationCodes[obj](ParseArguments(globalString, ref globalP));
+                return parenthesesOperationCodes[obj.ToLower()]
+                    (ParseArguments(globalString, ref globalP, cellReferenceInit, linkables));
             }
 
-
-            if (obj.All(x => char.IsNumber(x)))
+            if (obj.All(x => char.IsDigit(x)))
             {
                 isValueNode = true;
                 return new NumberNode(BigInteger.Parse(obj));
             }
 
             // TO ADD: ReferenceNode
+            if (obj.All(x => char.IsLetterOrDigit(x)
+                && (!char.IsLetter(x)
+                || char.IsUpper(x))))
+            {
+                isValueNode = true;
+                return new ReferenceNode(new CellId(obj), cellReferenceInit);
+            }
 
-            if(obj.Length == 1)
+            if (obj.Length == 1)
                 throw new SyntaxError(
                     $"Cannot identify {obj} object, on location {globalP - obj.Length}",
                     globalString, globalP - obj.Length);
@@ -170,7 +139,7 @@ namespace oop_lab_1_cokcell.Classes.Parser
                     globalString, globalP - obj.Length, globalP);
         }
 
-        private static List<Expression> ParseArguments(string s, ref int p)
+        private static List<Expression> ParseArguments(string s, ref int p, TableAction cellReferenceInit, List<CellId> linkables)
         {
             List<Expression> exp = new List<Expression>();
             if (Peek(s, ref p) == '(') Read(s, ref p); // start (
@@ -180,15 +149,14 @@ namespace oop_lab_1_cokcell.Classes.Parser
                 {
                     if (Peek(s, ref p) == ')') break;
                     else if (Peek(s, ref p) == ',') Read(s, ref p);
-                    exp.Add(ParseParentheses(s, ref p));
+                    exp.Add(ParseParentheses(s, ref p, cellReferenceInit, linkables));
                 }
             if (Peek(s, ref p) == ')') Read(s, ref p); // start (
             else throw new SyntaxError($"Unclosed () operator : Expected ')', but got '{Peek(s, ref p)}' at position {p}", s, p);
             return exp;
         }
 
-
-        private static Expression ParseParentheses(string s, ref int p)
+        private static Expression ParseParentheses(string s, ref int p, TableAction cellReferenceInit, List<CellId> linkables)
         {
             List<Expression> exp = new List<Expression>();
             int cntParentheses = 0;
@@ -200,7 +168,7 @@ namespace oop_lab_1_cokcell.Classes.Parser
 
                 if (cntParentheses != 0)
                 {
-                    exp.Add(ParseParentheses(s, ref p));
+                    exp.Add(ParseParentheses(s, ref p, cellReferenceInit, linkables));
                     isUnaryContext = false;
 
                     for (; cntParentheses > 0; cntParentheses--)
@@ -214,10 +182,15 @@ namespace oop_lab_1_cokcell.Classes.Parser
                 }
                 else
                 {
-                    exp.Add(ConvertStringIntoObject(
-                            ReadObjectString(s, ref p, true), s, ref p,
-                            isUnaryContext, out bool isValueNode
-                    ));
+                    var x = ConvertStringIntoObject(
+                            ReadObjectString(s, ref p, true), s, ref p, cellReferenceInit,
+                            isUnaryContext, out bool isValueNode, linkables
+                    );
+
+                    if (x is ReferenceNode node)
+                        linkables.Add(node.GetKey());
+
+                    exp.Add(x);
 
                     // work with
                     //  2 +-+3 
@@ -266,32 +239,23 @@ namespace oop_lab_1_cokcell.Classes.Parser
                 string operators = "";
                 foreach (var x in exp)
                     if (x is OperationNode op)
-                        operators += op.NameLog;
+                        operators += op.NameLog+'\n';
                 throw new SyntaxError($"Invalid argument count for 1 of operators:\n{operators}");
             }
             return exp[0];
         }
 
-        public static Expression Parse(string s)
+        public static Expression Parse(string s, TableAction cellReferenceInit, out List<CellId> linkables)
         {
+            linkables = new List<CellId>();
+            if (s == string.Empty) return new Expression();
+
             int pos = 0;
-            var ans = ParseParentheses(s, ref pos);
+            var ans = ParseParentheses(s, ref pos, cellReferenceInit, linkables);
             // for endl ')'
             if (pos != s.Length)
                 throw new SyntaxError($"Extra character : {s[pos]} at position {pos}", s, pos);
             return ans;
         }
-
-        //public static string TestReader(string s)
-        //{
-        //    int p = 0;
-        //    string ans = "";
-        //    while(p < s.Length)
-        //    {
-        //        if (ans.Length > 0) ans += "\n--------------\n";
-        //        ans += '\'' + ReadObjectString(s, ref p, true) + '\'';
-        //    }
-        //    return ans;
-        //}
     }
 }
