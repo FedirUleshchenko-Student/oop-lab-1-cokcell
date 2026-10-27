@@ -17,6 +17,8 @@
 !*.ans
 !*.md
 !*.txt
+!*.svg
+!*.ttf
 
 # 4.	Ignore specific package-related directories
 #		of Visual Studio MAUI creation
