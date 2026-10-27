@@ -1,6 +1,5 @@
 ﻿using Microsoft.Maui.Controls;
 using oop_lab_1_cokcell.Classes.Cells;
-using oop_lab_1_cokcell.Classes.Exceptions;
 using oop_lab_1_cokcell.Classes.ExpressionNodes;
 using System;
 using System.Collections.Generic;
@@ -27,13 +26,58 @@ namespace oop_lab_1_cokcell.Classes.Parser
                 {"-", () => new SubtractNode() },
                 {"*", () => new MultiplyNode() },
                 {"/", () => new DivideNode() },
+                {"^", () => new PowerNode() },
             };
 
         private static Dictionary<string, Func<List<Expression>, Expression>> parenthesesOperationCodes =
             new Dictionary<string, Func<List<Expression>, Expression>>{
                 {"abs", args => new AbsoluteNode(args) },
                 {"mod", args => new ModuleNode(args) },
+                {"div", args => new DivNode(args) },
+                {"nmax", args => new NmaxNode(args) },
+                {"nmin", args => new NminNode(args) },
             };
+
+        internal class SyntaxError : Exception
+        {
+            int? pos = null;
+            int? pos2 = null;
+            string? org = null;
+            string mes;
+
+            public SyntaxError(string message)
+            {
+                this.mes = message;
+            }
+
+            public SyntaxError(string message, string original, int errorPositon)
+                : this(message)
+            {
+                this.pos = errorPositon;
+                this.org = original;
+            }
+
+            public SyntaxError(string message, string original, int position1, int position2)
+                : this(message, original, position1)
+            {
+                this.pos2 = position2;
+            }
+
+            public override string Message
+            {
+                get
+                {
+                    if (pos.HasValue && pos2.HasValue && pos.Value < pos2.Value)
+                        return $"{org}\n{new string(' ', pos.Value)}^" +
+                                $"{new string('~', pos2.Value - pos.Value - 1)}^\n" +
+                                $"{mes}\n";
+                    else if (pos.HasValue)
+                        return $"{org}\n{new string(' ', pos.Value)}^\n{mes}\n";
+                    else
+                        return $"{mes}\n";
+                }
+            }
+        }
 
         private static void SkipWhitespace(string s, ref int p)
         {
@@ -57,7 +101,8 @@ namespace oop_lab_1_cokcell.Classes.Parser
             SkipWhitespace(s, ref p);
             if (p >= s.Length) return '\0';
             if (toCheckIfValid && InvalidChar(s, ref p))
-                throw new SyntaxError($"Unrecognised character '{s[p]}'", s, p);
+                //throw new SyntaxError($"Unrecognised character '{s[p]}'", s, p);
+                throw new SyntaxError($"Невизначений знак '{s[p]}'", s, p);
             return s[p];
         }
 
@@ -130,20 +175,28 @@ namespace oop_lab_1_cokcell.Classes.Parser
             }
 
             if (obj.Length == 1)
+                //throw new SyntaxError(
+                //    $"Cannot identify {obj} object, on location {globalP - obj.Length}",
+                //    globalString, globalP - obj.Length);
                 throw new SyntaxError(
-                    $"Cannot identify {obj} object, on location {globalP - obj.Length}",
+                    $"Неможливо визначити {obj} об'єкт, на позиції {globalP - obj.Length}",
                     globalString, globalP - obj.Length);
             else
+                //throw new SyntaxError(
+                //    $"Cannot identify {obj} object, on location [{globalP - obj.Length},{globalP - 1}]",
+                //    globalString, globalP - obj.Length, globalP - 1);
                 throw new SyntaxError(
-                    $"Cannot identify {obj} object, on location [{globalP - obj.Length},{globalP}]",
-                    globalString, globalP - obj.Length, globalP);
+                    $"Неможливо визначити {obj} об'єкт, на позиції [{globalP - obj.Length},{globalP - 1}]",
+                    globalString, globalP - obj.Length, globalP - 1);
         }
 
         private static List<Expression> ParseArguments(string s, ref int p, TableAction cellReferenceInit, List<CellId> linkables)
         {
             List<Expression> exp = new List<Expression>();
             if (Peek(s, ref p) == '(') Read(s, ref p); // start (
-            else throw new SyntaxError($"Unopened () operator : Expected '(', but got '{Peek(s, ref p)}' at position {p}", s, p);
+            else
+                //throw new SyntaxError($"Unopened () operator : Expected '(', but got '{Peek(s, ref p)}' at position {p}", s, p);
+                throw new SyntaxError($"Невідкриті дужки аргументів () : Очікувалось '(', але отримано '{Peek(s, ref p)}' на позиції {p}", s, p);
 
             while (p < s.Length)
                 {
@@ -152,7 +205,9 @@ namespace oop_lab_1_cokcell.Classes.Parser
                     exp.Add(ParseParentheses(s, ref p, cellReferenceInit, linkables));
                 }
             if (Peek(s, ref p) == ')') Read(s, ref p); // start (
-            else throw new SyntaxError($"Unclosed () operator : Expected ')', but got '{Peek(s, ref p)}' at position {p}", s, p);
+            else
+                //throw new SyntaxError($"Unclosed () operator : Expected ')', but got '{Peek(s, ref p)}' at position {p}", s, p);
+                throw new SyntaxError($"Незакриті дужки аргументів () : Очікувалось ')', але отримано '{Peek(s, ref p)}' на позиції {p}", s, p);
             return exp;
         }
 
@@ -174,8 +229,11 @@ namespace oop_lab_1_cokcell.Classes.Parser
                     for (; cntParentheses > 0; cntParentheses--)
                     {
                         if (Peek(s, ref p) != ')')
+                            //throw new SyntaxError(
+                            //    string.Format("Expected ')', but got '{0}' at position {1}",
+                            //    (p < s.Length) ? s[p] : '\0', p), s, p);
                             throw new SyntaxError(
-                                string.Format("Expected ')', but got '{0}' at position {1}",
+                                string.Format("Очікувалось ')', але отримано '{0}' на позиції {1}",
                                 (p < s.Length) ? s[p] : '\0', p), s, p);
                         Read(s, ref p);
                     }
@@ -201,8 +259,10 @@ namespace oop_lab_1_cokcell.Classes.Parser
             }
 
             if(cntParentheses != 0)
+                //throw new SyntaxError(
+                //    $"Unclosed parentheses : Expected ')', but got '{s[p]}' at position {p}", s, p);
                 throw new SyntaxError(
-                    $"Unclosed parentheses : Expected ')', but got '{s[p]}' at position {p}", s, p);
+                    $"Незакрита дужка : Очікувалось ')', але отримано '{s[p]}' на позиції {p}", s, p);
 
             for (int i = exp.Count - 2; i >= 0; i--)
             {
@@ -217,7 +277,7 @@ namespace oop_lab_1_cokcell.Classes.Parser
                 }
             }
 
-            for (int prior = 2; prior <= 3; prior++) {
+            for (int prior = 2; prior <= 4; prior++) {
                 for (int i = 1; i < exp.Count - 1; i++)
                 {
                     if (exp[i] is OperationNode op
@@ -240,7 +300,9 @@ namespace oop_lab_1_cokcell.Classes.Parser
                 foreach (var x in exp)
                     if (x is OperationNode op)
                         operators += op.NameLog+'\n';
-                throw new SyntaxError($"Invalid argument count for 1 of operators:\n{operators}");
+                throw
+                    //new SyntaxError($"Invalid argument count for at least 1 of operators:\n{operators}");
+                    new SyntaxError($"Неправильна кількість аргументів для хоча б 1 з операцій:\n{operators}");
             }
             return exp[0];
         }
@@ -254,7 +316,8 @@ namespace oop_lab_1_cokcell.Classes.Parser
             var ans = ParseParentheses(s, ref pos, cellReferenceInit, linkables);
             // for endl ')'
             if (pos != s.Length)
-                throw new SyntaxError($"Extra character : {s[pos]} at position {pos}", s, pos);
+                //throw new SyntaxError($"Extra character : {s[pos]} at position {pos}", s, pos);
+                throw new SyntaxError($"Лишній символ : {s[pos]} на позиції {pos}", s, pos);
             return ans;
         }
     }

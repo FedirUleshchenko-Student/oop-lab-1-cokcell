@@ -4,6 +4,24 @@
              x:Class="oop_lab_1_cokcell.Pages.TableTester"
              Title="Table Test">
     <VerticalStackLayout>
+        <Button
+            x:Name="clearTable"
+            Text="Clear Table"
+            Clicked="OnTableClearing"
+        />
+        <Button
+            x:Name="tableSaver"
+            Text="Save Table"
+            Clicked="OnTableSaving"
+        />
+        <Button
+            x:Name="tableLoader"
+            Text="Load Table"
+            Clicked="OnTableLoading"
+        />
+        <Label x:Name="globalErrorView"
+            FontFamily="Consolas"
+            FontSize="25" />
         <Entry x:Name="inputField1"
             Placeholder="Enter text"
             Completed="OnEntryCompleted1" />

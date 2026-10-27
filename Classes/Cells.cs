@@ -1,5 +1,4 @@
-﻿using oop_lab_1_cokcell.Classes.Exceptions;
-using oop_lab_1_cokcell.Classes.ExpressionNodes;
+﻿using oop_lab_1_cokcell.Classes.ExpressionNodes;
 using oop_lab_1_cokcell.Classes.Parser;
 using System;
 using System.Collections.Generic;
@@ -27,7 +26,8 @@ namespace oop_lab_1_cokcell.Classes.Cells
             set
             {
                 if (value == 0)
-                    throw new Exception("Cannot set row to 0");
+                    //throw new Exception("Cannot set row to 0");
+                    throw new Exception("Неможливо присвоїти значення 0 рядку");
                 _row = value;
             }
         }
@@ -38,7 +38,8 @@ namespace oop_lab_1_cokcell.Classes.Cells
             set
             {
                 if (value == 0)
-                    throw new Exception("Cannot set column to 0");
+                    //throw new Exception("Cannot set column to 0");
+                    throw new Exception("Неможливо присвоїти значення 0 колонці");
                 _column = value;
             }
         }
@@ -91,13 +92,15 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 numberIndex++; }
 
             if(numberIndex == 0)
-                throw new Exception($"There is no column position (chars) in refNode {Id}");
+                //throw new Exception($"There is no column position (chars) in refNode {Id}");
+                throw new Exception($"Не існує позиції колонки (знаки) у ноді посилання {Id}");
             Column = Id.Substring(0, numberIndex);
 
             if (numberIndex < Id.Length)
                 Row = uint.Parse(Id.Substring(numberIndex));
             else
-                throw new Exception($"There is no row position (number) in refNode {Id}");
+                //throw new Exception($"There is no row position (number) in refNode {Id}");
+                throw new Exception($"Не існує позиції рядку (цифри) у ноді посилання {Id}");
         }
 
         public static string getStringSafe(CellId id)
@@ -117,7 +120,8 @@ namespace oop_lab_1_cokcell.Classes.Cells
         public override string ToString()
         {
             if (ColumnInt == 0 || Row == 0)
-                throw new Exception($"Cannot get a location Id of a position [{ColumnInt}, {Row}]");
+                //throw new Exception($"Cannot get a location Id of a position [{ColumnInt}, {Row}]");
+                throw new Exception($"Неможливо отримати CellId позиції [{ColumnInt}, {Row}]");
             return Column + Row.ToString();
         }
 
@@ -149,34 +153,42 @@ namespace oop_lab_1_cokcell.Classes.Cells
     internal class TableCell
     {
         public CellId Id = new CellId();
-        public string RawExpression = string.Empty;
+        private string rawExpression = string.Empty;
+        public string Expression
+        {
+            get => rawExpression;
+        }
 
         public bool IsEmpty
         {
             // Null Expression is empty (?)
             get => (parsedExpression == null
-                || parsedExpression.GetType() == typeof(Expression));
+                || parsedExpression.GetType() == typeof(Expression))
+                // DANGER
+                // COULD BREAK PARSER LOGIC ???
+                && ErrorMessage == null;
         }
 
         public bool recalculationNeed = true;
         private BigInteger CalculatedValue;
-        Expression? parsedExpression;
+        private Expression? parsedExpression;
 
         public Exception? ErrorMessage;
 
         public event Action<CellId>? onErrorThrown;
         public event Action? onRecalculation;
         private List<CellId> foundation = new List<CellId>();
+        public List<CellId> Foundation { get => foundation; }
 
         private bool RelaysOn(CellId targetId, Table currTable, HashSet<CellId>? visited = null)
         {
             visited ??= new HashSet<CellId>();
             if (!visited.Add(Id)) return false;
 
-            if (foundation.Contains(targetId))
+            if (Foundation.Contains(targetId))
                 return true;
 
-            foreach (var depId in foundation)
+            foreach (var depId in Foundation)
             {
                 var cell = currTable.FindCell(depId);
                 if (cell != null && cell.RelaysOn(targetId, currTable, visited))
@@ -189,7 +201,8 @@ namespace oop_lab_1_cokcell.Classes.Cells
         private void OnOccuredError(CellId sourceId)
         {
             recalculationNeed = true;
-            ErrorMessage = new Exception($"Broken calculation by related referenced cell [{sourceId}]");
+            //ErrorMessage = new Exception($"Broken calculation by related referenced cell [{sourceId}]");
+            ErrorMessage = new Exception($"Знаманий підрахунок через залежну клітинку [{sourceId}]");
             onErrorThrown?.Invoke(Id);
         }
 
@@ -217,10 +230,10 @@ namespace oop_lab_1_cokcell.Classes.Cells
             {
                 // for EXPRESSION VIEW
                 // Should be at the end, but ^^^
-                RawExpression = expression;
+                rawExpression = expression;
 
                 // Removing old linkables
-                foreach (var cellId in foundation)
+                foreach (var cellId in Foundation)
                 {
                     var cell = currTable.FindCell(cellId);
                     if (cell != null)
@@ -234,34 +247,40 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 {
                     var c = currTable.FindCell(id);
                     if (c == null)
-                        throw new Exception($"Cannot locate cell: {CellId.getStringSafe(id)}");
+                        //throw new Exception($"Cannot locate cell: {CellId.getStringSafe(id)}");
+                        throw new Exception($"Неможливо знайти клітинку: {CellId.getStringSafe(id)}");
                     return c.GetValue(true);
                 }, out foundation);
 
-                foreach (var cellId in foundation)
+                if (parsedExpression.GetType() == typeof(Expression))
+                    parsedExpression = null;
+
+                foreach (var cellId in Foundation)
                 {
                     if(cellId.Equals(Id))
-                        throw new Exception($"Self-recursive reference occured");
+                        //throw new Exception($"Self-recursive reference occured");
+                        throw new Exception($"Знайдене посилання сам-у-себе");
                 }
 
                 // Test move, for 1 -> 2 -> 3 -> 1 situation
                 // Setting up new linkables for recalc
-                foreach (var cellId in foundation)
+                foreach (var cellId in Foundation)
                 {
                     var cell = currTable.PullCell(cellId);
                     cell.onRecalculation += RecalculationForced;
                 }
 
-                foreach (var cellId in foundation)
+                foreach (var cellId in Foundation)
                 {
                     var cell = currTable.FindCell(cellId);
                     if (cell != null && cell.RelaysOn(Id, currTable))
-                        throw new Exception($"New recursive reference occured, relays on [{cellId}]");
+                        //throw new Exception($"New recursive reference occured, relays on [{cellId}]");
+                        throw new Exception($"Знайдене нове рекурсивне посилання, залежить від [{cellId}]");
                 }
 
                 // Test move, for 1 -> 2 -> 3 -> 1 situation
                 // Double-linking new linkables
-                foreach (var cellId in foundation)
+                foreach (var cellId in Foundation)
                 {
                     var cell = currTable.PullCell(cellId);
                     cell.onErrorThrown += OnOccuredError;
@@ -279,7 +298,7 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 // No ?
                 // 1 -> 2 -> 3 -> 1
                 // destroying link 3->1 does not activates recalc
-                // foundation.Clear();
+                // Foundation.Clear();
 
                 ErrorMessage = e;
                 onErrorThrown?.Invoke(Id);
@@ -300,12 +319,28 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 onErrorThrown?.Invoke(Id);
 
                 if (relationErrorCellId == true)
-                    throw new Exception($"Broken calculation by related referenced cell [{Id}]");
+                    //throw new Exception($"Broken calculation by related referenced cell [{Id}]");
+                    throw new Exception($"Знаманий підрахунок через залежну клітинку [{Id}]");
 
                 throw ErrorMessage;
             }
 
             return CalculatedValue;
+        }
+
+        public string? GetAbsoluteErrorSupportedValue()
+        {
+            string ans;
+            try
+            {
+                ans = GetValue().ToString();
+            }
+            catch(Exception e)
+            {
+                ans = e.Message;
+            }
+            //return (ans == "" || (parsedExpression?.GetType() == typeof(Exception))) ? null : ans;
+            return ans == "" ? null : ans;
         }
 
         public void Recalculate()

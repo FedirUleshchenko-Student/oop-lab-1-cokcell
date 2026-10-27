@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="oop_lab_1_cokcell.Pages.UIManager"
+             BackgroundColor="#1E1E1E">
+
+    <Grid RowDefinitions="Auto, Auto, Auto, *" RowSpacing="5">
+
+        <!-- 1. Main buttons panel, view model flicker -->
+        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" BackgroundColor="#2D2D30">
+
+            <ScrollView Grid.Column="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout Padding="10,8" Spacing="8" VerticalOptions="Center">
+
+                    <Button x:Name="BtnNew" Text="Нова таблиця" Clicked="NewTable_Clicked" 
+                            BackgroundColor="#8A88C9" TextColor="White" CornerRadius="12" Padding="14,0" HeightRequest="36" />
+
+                    <Button x:Name="BtnSave" Text="Зберегти таблицю" Clicked="SaveTable_Clicked" 
+                            BackgroundColor="#8A88C9" TextColor="White" CornerRadius="12" Padding="14,0" HeightRequest="36" />
+
+                    <Button x:Name="BtnSaveAs" Text="Зберегти таблицю як..." Clicked="SaveTableAs_Clicked" 
+                            BackgroundColor="#8A88C9" TextColor="White" CornerRadius="12" Padding="14,0" HeightRequest="36" />
+
+                    <Button x:Name="BtnLoad" Text="Завантажити таблицю" Clicked="LoadTable_Clicked" 
+                            BackgroundColor="#8A88C9" TextColor="White" CornerRadius="12" Padding="14,0" HeightRequest="36" />
+
+                    <BoxView WidthRequest="1" Color="#4A4A4C" Margin="6,2" VerticalOptions="Fill" />
+
+                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                        <Label x:Name="ModeLabel" Text="Режим: ЗНАЧЕННЯ" TextColor="White" VerticalOptions="Center" FontAttributes="Bold" Margin="4,0,0,0" />
+                        <Switch x:Name="ModeSwitch" Toggled="ModeSwitch_Toggled" IsToggled="False" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                </HorizontalStackLayout>
+            </ScrollView>
+
+            <!-- Documentation -->
+            <Button x:Name="BtnDocs" 
+                    Grid.Column="1" 
+                    Text="Документація" 
+                    Clicked="Docs_Clicked" 
+                    BackgroundColor="#4A4A4C" 
+                    TextColor="White" 
+                    CornerRadius="12" 
+                    Padding="14,0" 
+                    HeightRequest="36" 
+                    VerticalOptions="Center" 
+                    Margin="0,0,10,0" />
+        </Grid>
+
+        <!-- 2. Size change panel (Adding & remove) -->
+        <Grid Grid.Row="1" ColumnDefinitions="*, Auto, *, Auto" ColumnSpacing="10" Padding="8,6" BackgroundColor="#252526">
+
+            <!-- Rows change field & buttons -->
+            <Entry x:Name="RowTargetEntry" 
+                   Grid.Column="0"
+                   Placeholder="№ рядка (пустий = крайній)..." 
+                   Keyboard="Numeric"
+                   TextColor="White" 
+                   PlaceholderColor="#707070"
+                   BackgroundColor="#1E1E1E" 
+                   HeightRequest="36" 
+                   VerticalOptions="Center" />
+            <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                <Button x:Name="BtnDeleteRow" 
+                        Text="Видалити рядок" 
+                        Clicked="DeleteRow_Clicked" 
+                        BackgroundColor="#A85454" 
+                        TextColor="White" 
+                        CornerRadius="6" 
+                        HeightRequest="30"
+                        FontSize="12"
+                        Padding="10,0" />
+                <Button x:Name="BtnAddRow" 
+                        Text="Додати рядок" 
+                        Clicked="AddRow_Clicked" 
+                        BackgroundColor="#8A88C9" 
+                        TextColor="White" 
+                        CornerRadius="6" 
+                        HeightRequest="30"
+                        FontSize="12"
+                        Padding="10,0" />
+            </VerticalStackLayout>
+
+            <!-- Columns change field & buttons -->
+            <Entry x:Name="ColTargetEntry" 
+                   Grid.Column="2" 
+                   Placeholder="№ стовпця (пустий = крайній)..." 
+                   TextColor="White" 
+                   PlaceholderColor="#707070"
+                   BackgroundColor="#1E1E1E" 
+                   HeightRequest="36" 
+                   VerticalOptions="Center" />
+            <VerticalStackLayout Grid.Column="3" Spacing="4" VerticalOptions="Center">
+                <Button x:Name="BtnDeleteCol" 
+                        Text="Видалити стовпчик" 
+                        Clicked="DeleteCol_Clicked" 
+                        BackgroundColor="#A85454" 
+                        TextColor="White" 
+                        CornerRadius="6" 
+                        HeightRequest="30"
+                        FontSize="12"
+                        Padding="10,0" />
+                <Button x:Name="BtnAddCol" 
+                        Text="Додати стовпчик" 
+                        Clicked="AddCol_Clicked" 
+                        BackgroundColor="#8A88C9" 
+                        TextColor="White" 
+                        CornerRadius="6" 
+                        HeightRequest="30"
+                        FontSize="12"
+                        Padding="10,0" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- 3. Active panel of a cell - formula & calculated value / error -->
+        <Grid Grid.Row="2" ColumnDefinitions="60, 6.5*, 3.5*" ColumnSpacing="6" Padding="8,2" BackgroundColor="#252526">
+
+            <!-- Small field with ID of active cell -->
+            <Entry x:Name="ActiveCellLabel" 
+                    Grid.Column="0" 
+                    Text="A1" 
+                    IsReadOnly="True" 
+                    HorizontalTextAlignment="Center" 
+                    TextColor="#00A2ED" 
+                    FontAttributes="Bold" 
+                    BackgroundColor="#1E1E1E" 
+                    HeightRequest="36" 
+                    VerticalOptions="Start" />
+
+            <!-- Raw formula input field (~65% width) -->
+            <Entry x:Name="FormulaBar" 
+                    Grid.Column="1" 
+                    Placeholder="Виберіть клітинку та введіть вираз (наприклад, A1 + B2)..." 
+                    TextChanged="FormulaBar_TextChanged" 
+                    Completed="FormulaBar_Completed" 
+                    TextColor="White" 
+                    PlaceholderColor="#707070"
+                    BackgroundColor="#1E1E1E" 
+                    HeightRequest="36" 
+                    VerticalOptions="Start" />
+
+            <!-- Field with calculated value or error debug (~35% width) -->
+            <Editor x:Name="ValueOrErrorDisplay" 
+                    Grid.Column="2" 
+                    IsReadOnly="True"
+                    FontFamily="Consolas"
+                    Placeholder="Значення / Помилка" 
+                    TextColor="#9CDCFE" 
+                    PlaceholderColor="#707070"
+                    BackgroundColor="#1E1E1E" 
+                    HeightRequest="75"
+                    AutoSize="Disabled" />
+
+        </Grid>
+
+        <!-- 4. Main table grid in scroll view -->
+        <ScrollView Grid.Row="3" Orientation="Both">
+            <Grid x:Name="DataGrid" BackgroundColor="#3E3E42" ColumnSpacing="1" RowSpacing="1" Padding="1" />
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

@@ -10,8 +10,7 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
 {
     internal class Expression
     {
-        //public virtual void Link(List<Expression> arguments) { }
-        //public virtual bool Ready() { return true; }
+        //public virtual bool isLogicUI { get => false; }
 
         public virtual BigInteger? Calculate()
         {
@@ -51,20 +50,23 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
         /// Always needs at least 1
         /// Set null if there is no limit at argument count (possible - [1, inf])
         /// </summary>
-        public abstract int? NeededArgs { get; }
+        public virtual int? NeededArgs { get; }
         public List<Expression> Arguments = new List<Expression>();
 
 
-        public virtual bool Ready() { return !NeededArgs.HasValue || Arguments.Count == NeededArgs; }
+        public virtual bool Ready() { return (!NeededArgs.HasValue) || Arguments.Count == NeededArgs; }
 
         protected abstract BigInteger calculationLogic();
         protected void CalculationCheck()
         {
             if (!Ready())
             {
+                //throw new Exception(
+                //    $"Cannot use operation {NameLog} " +
+                //    $"on {Arguments.Count} arguments (Must be {NeededArgs})");
                 throw new Exception(
-                    $"Cannot use operation {NameLog} " +
-                    $"on {Arguments.Count} arguments (Must be {NeededArgs})");
+                    $"Неможливо використати операцію {NameLog} " +
+                    $"на {Arguments.Count} аргументах (Має бути {NeededArgs})");
             }
         }
 
@@ -78,9 +80,8 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
     internal class AddNode : OperationNode
     {
         public override string NameLog => "+ (binary)";
-        public static string ExpressionCode =>  "+";
 
-        public override int Priority => 3;
+        public override int Priority => 4;
         public override int? NeededArgs => 2;
 
         protected override BigInteger calculationLogic()
@@ -93,7 +94,7 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
     {
         public override string NameLog => "- (binary)";
 
-        public override int Priority => 3;
+        public override int Priority => 4;
         public override int? NeededArgs => 2;
 
         protected override BigInteger calculationLogic()
@@ -106,7 +107,7 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
     {
         public override string NameLog => "*";
 
-        public override int Priority => 2;
+        public override int Priority => 3;
         public override int? NeededArgs => 2;
 
         protected override BigInteger calculationLogic()
@@ -119,7 +120,7 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
     {
         public override string NameLog => "/";
 
-        public override int Priority => 2;
+        public override int Priority => 3;
         public override int? NeededArgs => 2;
 
         public DivideNode() {}
@@ -132,7 +133,8 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
         protected override BigInteger calculationLogic()
         {
             if ((BigInteger)Arguments[1] == 0)
-                throw new Exception("Cannot divide by 0");
+                //throw new Exception("Cannot divide by 0");
+                throw new Exception("Неможливо поділити на 0");
             return (BigInteger)Arguments[0] / Arguments[1];
         }
     }
@@ -180,7 +182,7 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
 
     internal class ModuleNode : OperationNode
     {
-        public override string NameLog => "module";
+        public override string NameLog => "%";
 
         public override int? NeededArgs => 2;
         public ModuleNode(List<Expression> _args)
@@ -195,15 +197,12 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
         }
     }
 
-
-    internal class PowerNode : OperationNode
+    internal class DivNode : OperationNode
     {
-        public override string NameLog => "power";
+        public override string NameLog => "div";
 
-        public override int Priority => 2;
         public override int? NeededArgs => 2;
-
-        public PowerNode(List<Expression> _args)
+        public DivNode(List<Expression> _args)
         {
             Arguments = _args;
             CalculationCheck();
@@ -211,7 +210,84 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
 
         protected override BigInteger calculationLogic()
         {
-            return BigInteger.Pow(Arguments[0], (int)((BigInteger)Arguments[1]));
+            if ((BigInteger)Arguments[1] == 0)
+                //throw new Exception("Cannot divide by 0");
+                throw new Exception("Неможливо провести цілочисельне ділення на 0");
+            return (BigInteger)Arguments[0] / Arguments[1];
         }
     }
+
+    internal class NmaxNode : OperationNode
+    {
+        public override string NameLog => "nmax";
+
+        public NmaxNode(List<Expression> _args)
+        {
+            Arguments = _args;
+            CalculationCheck();
+        }
+
+        public override bool Ready() { return Arguments.Count > 0; }
+
+        protected override BigInteger calculationLogic()
+        {
+            BigInteger result = Arguments[0];
+            foreach (var arg in Arguments)
+                result = BigInteger.Max(result, arg);
+
+            return result;
+        }
+    }
+
+    internal class NminNode : OperationNode
+    {
+        public override string NameLog => "nmin";
+
+        public NminNode(List<Expression> _args)
+        {
+            Arguments = _args;
+            CalculationCheck();
+        }
+
+        public override bool Ready() { return Arguments.Count > 0; }
+
+        protected override BigInteger calculationLogic()
+        {
+            BigInteger result = Arguments[0];
+            foreach (var arg in Arguments)
+                result = BigInteger.Max(result, arg);
+
+            return result;
+        }
+    }
+
+    internal class PowerNode : OperationNode
+    {
+        public override string NameLog => "^";
+
+        public override int Priority => 3;
+        public override int? NeededArgs => 2;
+        public override bool Ready() { return Arguments.Count > 0; }
+
+        protected override BigInteger calculationLogic()
+        {
+            return BigInteger.Pow(Arguments[0], (int)(BigInteger)Arguments[1]);
+        }
+    }
+
+
+    //internal class EqualNode : OperationNode
+    //{
+    //    public override string NameLog => "=";
+    //    public override bool isLogicUI => true;
+
+    //    public override int Priority => 3;
+    //    public override int? NeededArgs => 2;
+
+    //    protected override BigInteger calculationLogic()
+    //    {
+    //        return (BigInteger)Arguments[0] == Arguments[1]
+    //            ? BigInteger.One : BigInteger.Zero;
+    //    }
+    //}
 }

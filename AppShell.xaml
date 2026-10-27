@@ -7,6 +7,11 @@
     Title="CokCell">
 
     <ShellContent
+    Title="КокСель"
+    ContentTemplate="{DataTemplate pages:UIManager}"
+    Route="КокСель" />
+
+    <ShellContent
         Title="Simple 1 Formula Parser"
         ContentTemplate="{DataTemplate pages:ParserTest1}"
         Route="Expression Parcer Calculator" />
@@ -20,5 +25,4 @@
     Title="Simple Table Test"
     ContentTemplate="{DataTemplate pages:TableTester}"
     Route="Simple Table Test" />
-
 </Shell>
