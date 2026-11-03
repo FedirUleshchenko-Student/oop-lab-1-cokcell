@@ -1,4 +1,5 @@
-﻿using oop_lab_1_cokcell.Classes.Cells;
+﻿using Microsoft.Maui.Controls;
+using oop_lab_1_cokcell.Classes.Cells;
 using oop_lab_1_cokcell.Classes.Files;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,9 @@ namespace oop_lab_1_cokcell.Pages
 
                 // shit code
                 // for default text, not "" when selecting empty cell
-                ValueOrErrorDisplay.Text = "";
+                var cell = currentTable.FindCell(uiCells[_selectedEntry]);
+                ValueOrErrorDisplay.Text = cell != null ?
+                cell.GetAbsoluteErrorSupportedValue() : "";
             }
         }
         private bool calculatingCurrentCell = false;
@@ -124,13 +127,10 @@ namespace oop_lab_1_cokcell.Pages
             OpenNewTable();
         }
 
-        private void TotalRecalculationSmart(bool isRebuilded = false)
+        private void TotalRecalculationSmart()
         {
             var it = currentTable.GetEnummeratorCells;
             while (it.MoveNext())
-                if (isRebuilded)
-                    it.Current.Value.RecalculationForced();
-                else
                     it.Current.Value.Recalculate();
         }
 
@@ -229,6 +229,7 @@ namespace oop_lab_1_cokcell.Pages
 
                     DataGrid.Add(cellView, (int)c, (int)r);
                 }
+            
             }
         }
         #endregion
@@ -298,11 +299,11 @@ namespace oop_lab_1_cokcell.Pages
             UpdateCellEntryBackgroundColor(entry);
         }
 
-        private void UpdateGridAll(bool isRebuilded = false)
+        private void UpdateGridAll()
         {
             if (viewMode == ViewModes.VALUE_MODE)
             {
-                TotalRecalculationSmart(isRebuilded);
+                TotalRecalculationSmart();
             }
 
             foreach (var cellId in entrys.Keys.ToList())
@@ -518,7 +519,7 @@ namespace oop_lab_1_cokcell.Pages
             _selectedEntry = null;
             BuildGridUI();
             selectedEntry = entrys[selectedCell];
-            UpdateGridAll(true);
+            UpdateGridAll();
         }
 
         private async void DeleteRow_Clicked(object sender, EventArgs e)
