@@ -527,6 +527,7 @@ namespace oop_lab_1_cokcell.Pages
                     throw new Exception("Не всі знаки є числами");
 
                 currentTable.RemoveRow(targetRow);
+                fileState?.FlagChanges();
 
                 if (selectedCell.Row > currentTable.Rows)
                 {
@@ -553,6 +554,7 @@ namespace oop_lab_1_cokcell.Pages
                     throw new Exception("Не всі знаки є числами");
 
                 currentTable.AddRow(targetRow);
+                fileState?.FlagChanges();
 
                 NewTableOverrideBypass();
                 //RowTargetEntry.Text = string.Empty;
@@ -577,6 +579,7 @@ namespace oop_lab_1_cokcell.Pages
                     throw new Exception("Не всі знаки є великими буквами англійського алфавіту");
 
                 currentTable.RemoveColumn(targetCol);
+                fileState?.FlagChanges();
 
                 if (selectedCell.ColumnInt > currentTable.Columns)
                 {
@@ -605,6 +608,7 @@ namespace oop_lab_1_cokcell.Pages
                     throw new Exception("Не всі знаки є великими буквами англійського алфавіту");
 
                 currentTable.AddColumn(targetCol);
+                fileState?.FlagChanges();
 
                 NewTableOverrideBypass();
                 //ColTargetEntry.Text = string.Empty;
@@ -646,6 +650,12 @@ namespace oop_lab_1_cokcell.Pages
                 "Натисніть «Зберегти таблицю як...», щоб обрати місце збереження: локально на вашому пристрої або у хмарі Google Drive.";
 
             await DisplayAlert("Документація CokCell", docsText, "Зрозуміло");
+        }
+        
+        // TODO
+        private async void OnExitClicked(object sender, EventArgs e)
+        {
+
         }
     }
 }
