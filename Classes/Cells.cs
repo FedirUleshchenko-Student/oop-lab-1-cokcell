@@ -171,7 +171,7 @@ namespace oop_lab_1_cokcell.Classes.Cells
 
         public bool recalculationNeed = true;
         private BigInteger CalculatedValue;
-        private Expression? parsedExpression;
+        public Expression? parsedExpression { get; private set; }
 
         public Exception? ErrorMessage;
 
@@ -235,7 +235,7 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 // Removing old linkables
                 foreach (var cellId in Foundation)
                 {
-                    var cell = currTable.FindCell(cellId);
+                    var cell = currTable.FindCellSafe(cellId);
                     if (cell != null)
                     {
                         cell.onErrorThrown -= OnOccuredError;

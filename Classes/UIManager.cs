@@ -27,14 +27,15 @@ namespace oop_lab_1_cokcell.Pages
                 {
                     _selectedEntry.FontSize = 12;
                     _selectedEntry.TextColor = Colors.White;
-                    UpdateGridCellBackgroundColor(_selectedEntry, true);
+                    UpdateCellEntryBackgroundColor(_selectedEntry, true);
+                    UpdateCellEntryText(_selectedEntry, true);
                 }
 
                 _selectedEntry = value;
 
                 _selectedEntry.FontSize = 15;
                 _selectedEntry.TextColor = Color.FromArgb("#9CDCFE");
-                UpdateGridCellBackgroundColor(_selectedEntry);
+                UpdateCellEntryBackgroundColor(_selectedEntry);
 
                 // shit code
                 // for default text, not "" when selecting empty cell
@@ -210,8 +211,9 @@ namespace oop_lab_1_cokcell.Pages
 
                         entry.Unfocused += (s, e) =>
                         {
-                            if (viewMode == ViewModes.VALUE_MODE)
-                                PushInput(FormulaBar.Text, entryCellId);
+                            PushInput(FormulaBar.Text, entryCellId);
+                            //if (viewMode == ViewModes.VALUE_MODE)
+                            //    UpdateGridCell(entryCellId);
                         };
 
                         entry.TextChanged += GridCell_TextChanged;
@@ -228,7 +230,7 @@ namespace oop_lab_1_cokcell.Pages
         }
         #endregion
 
-        private void UpdateGridCellBackgroundColor(Entry? entry, bool isForcedUnfocus = false)
+        private void UpdateCellEntryBackgroundColor(Entry? entry, bool isForcedUnfocus = false)
         {
             if (entry == null) return;
 
@@ -253,23 +255,17 @@ namespace oop_lab_1_cokcell.Pages
             }
         }
 
-        private void UpdateGridCell(CellId id)
+        private void UpdateCellEntryText(Entry? entry, bool isForcedUpdate = false)
         {
-            var entry = entrys[id];
+            //if (entry == null) return;
+            var id = uiCells[entry];
             var cell = currentTable.FindCell(id);
-
-            if (cell == null || cell.IsEmpty)
-            {
-                entry.Text = "";
-                return;
-            }
-
-            if (viewMode == ViewModes.VALUE_MODE)
+            if (viewMode == ViewModes.VALUE_MODE && (selectedEntry != entry || isForcedUpdate))
             {
                 try
                 {
-                    entry.Text = cell.GetValue().ToString();
-                    if (cell.ErrorMessage?.Message.Length > 0)
+                    entry.Text = cell?.GetValue().ToString();
+                    if (cell?.ErrorMessage?.Message.Length > 0)
                         throw new Exception();
                 }
                 catch (Exception)
@@ -281,8 +277,22 @@ namespace oop_lab_1_cokcell.Pages
             {
                 entry.Text = cell.Expression;
             }
+        }
 
-            UpdateGridCellBackgroundColor(entry);
+
+        private void UpdateGridCell(CellId id)
+        {
+            var entry = entrys[id];
+            var cell = currentTable.FindCell(id);
+
+            if (cell == null || cell.IsEmpty)
+            {
+                entry.Text = "";
+                return;
+            }
+
+            UpdateCellEntryText(entry);
+            UpdateCellEntryBackgroundColor(entry);
         }
 
         private void UpdateGridAll()
@@ -372,7 +382,7 @@ namespace oop_lab_1_cokcell.Pages
                         "Ваша таблиця не має файлу.\nСтворити файл?", "Створити", "Ні");
                     if (call)
                         await SaveTableAs();
-                        Task.Run(() => SaveTableAs()).Wait();
+                    //Task.Run(() => SaveTableAs()).Wait();
                 }
                 else
                 {
@@ -384,6 +394,7 @@ namespace oop_lab_1_cokcell.Pages
             }
 
             fileState = new SavedFileState();
+            _selectedEntry = null;
             currentTable = new Table(10, 10);
             selectedCell = new CellId(1, 1);
             BuildGridUI();
@@ -436,7 +447,6 @@ namespace oop_lab_1_cokcell.Pages
             try
             {
                 bool call = await DisplayAlert("Завантажити з...", "Оберіть місце для завантаження", "Локально", "Google");
-
                 if (call)
                 {
                     string appFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CokCell");
@@ -457,6 +467,8 @@ namespace oop_lab_1_cokcell.Pages
 
                     await DisplayAlert("Успіх", "Успішно завантажено з Google Drive", "ОК");
                 }
+                
+                _selectedEntry = null;
                 BuildGridUI();
                 selectedCell = new CellId(1, 1);
                 selectedEntry = entrys[selectedCell];

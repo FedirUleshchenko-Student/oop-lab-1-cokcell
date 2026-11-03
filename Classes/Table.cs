@@ -51,12 +51,17 @@ namespace oop_lab_1_cokcell.Classes.Cells
         {
             if (!cells.ContainsKey(id))
                 CreateCell(id);
-            return FindCell(id);
+            return FindCellSafe(id);
         }
 
         public TableCell? FindCell(CellId id)
         {
             CheckCellDefinedArea(id);
+            return FindCellSafe(id);
+        }
+
+        public TableCell? FindCellSafe(CellId id)
+        {
             cells.TryGetValue(id, out TableCell? ans);
             return ans;
         }
