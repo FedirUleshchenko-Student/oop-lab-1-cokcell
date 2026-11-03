@@ -509,6 +509,7 @@ namespace oop_lab_1_cokcell.Pages
         // remove cells bypass
         private void NewTableOverrideBypass()
         {
+            _selectedEntry = null;
             BuildGridUI();
             selectedEntry = entrys[selectedCell];
             UpdateGridAll();
