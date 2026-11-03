@@ -54,6 +54,20 @@ namespace oop_lab_1_cokcell.Classes.Cells
             return FindCellSafe(id);
         }
 
+        public TableCell? PullCellSafe(CellId id)
+        {
+            try
+            {
+                if (!cells.ContainsKey(id))
+                    CreateCell(id);
+                return FindCellSafe(id);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public TableCell? FindCell(CellId id)
         {
             CheckCellDefinedArea(id);
@@ -87,6 +101,23 @@ namespace oop_lab_1_cokcell.Classes.Cells
             return newCells;
         }
 
+        public void TotalRelinkRemove()
+        {
+            // Робимо ToList(), щоб зняти точний зріз елементів і не залежити від модифікації словника
+            var cellList = cells.Values.ToList();
+            foreach (var cell in cellList)
+                cell.RemoveOldFoundation(this);
+        }
+
+        public void TotalRelinkAdd()
+        {
+            // Робимо ToList() — тепер, якщо PullCellSafe створить нову клітинку в cells,
+            // це не зламає цикл foreach
+            var cellList = cells.Values.ToList();
+            foreach (var cell in cellList)
+                cell.AddNewFoundation(this);
+        }
+
         public void RemoveColumn(uint id)
         {
             if (Columns == 1)
@@ -96,6 +127,7 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 //throw new Exception($"Cannot remove column {id} : it does not exist at the time");
                 throw new Exception($"Неможливо видалити колонку {id} : на цей час вона не існує");
 
+            TotalRelinkRemove();
             List<CellId> toDelete = new List<CellId>();
             foreach (var x in cells)
                 if (x.Value.Id.ColumnInt == id)
@@ -111,6 +143,7 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 });
 
             Columns--;
+            TotalRelinkAdd();
         }
 
         public void AddColumn(uint id)
@@ -122,13 +155,15 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 //throw new Exception("Cannot add any more columns");
                 throw new Exception("Неможиво додати більше колонок - переповнення");
 
+            TotalRelinkRemove();
             cells = GetNewDictionary(
                 (pos) => {
-                    if (pos.ColumnInt >= id)
+                    if (pos.ColumnInt > id)
                         pos.ColumnInt++;
                 });
 
             Columns++;
+            TotalRelinkAdd();
         }
 
         public void RemoveRow(uint id)
@@ -140,6 +175,7 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 //throw new Exception($"Cannot remove row {id} : it does not exist at the time");
                 throw new Exception($"Неможливо видалити рядок {id} : на цей час він не існує");
 
+            TotalRelinkRemove();
             List<CellId> toDelete = new List<CellId>();
             foreach (var x in cells)
                 if (x.Value.Id.Row == id)
@@ -155,6 +191,7 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 });
 
             Rows--;
+            TotalRelinkAdd();
         }
 
         public void AddRow(uint id)
@@ -166,13 +203,15 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 //throw new Exception("Cannot add any more rows");
                 throw new Exception("Неможиво додати більше рядків - переповнення");
 
+            TotalRelinkRemove();
             cells = GetNewDictionary(
                 (pos) => {
-                    if (pos.Row >= id)
+                    if (pos.Row > id)
                         pos.Row++;
                 });
 
             Rows++;
+            TotalRelinkAdd();
         }
 
         public const uint maxcolumns = 255;

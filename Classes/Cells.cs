@@ -206,7 +206,7 @@ namespace oop_lab_1_cokcell.Classes.Cells
             onErrorThrown?.Invoke(Id);
         }
 
-        private void RecalculationForced()
+        public void RecalculationForced()
         {
 
             // Expr or Error - would be
@@ -233,15 +233,7 @@ namespace oop_lab_1_cokcell.Classes.Cells
                 rawExpression = expression;
 
                 // Removing old linkables
-                foreach (var cellId in Foundation)
-                {
-                    var cell = currTable.FindCellSafe(cellId);
-                    if (cell != null)
-                    {
-                        cell.onErrorThrown -= OnOccuredError;
-                        cell.onRecalculation -= RecalculationForced;
-                    }
-                }
+                RemoveOldFoundation(currTable);
 
                 parsedExpression = ExpressionParser.Parse(expression, (id) =>
                 {
@@ -347,6 +339,32 @@ namespace oop_lab_1_cokcell.Classes.Cells
         {
             if (ErrorMessage != null) return;
             RecalculationForced();
+        }
+
+        public void RemoveOldFoundation(Table currTable)
+        {
+            foreach (var cellId in Foundation)
+            {
+                var cell = currTable.FindCellSafe(cellId);
+                if (cell != null)
+                {
+                    cell.onErrorThrown -= OnOccuredError;
+                    cell.onRecalculation -= RecalculationForced;
+                }
+            }
+        }
+
+        public void AddNewFoundation(Table currTable)
+        {
+            foreach (var cellId in Foundation)
+            {
+                var cell = currTable.PullCellSafe(cellId);
+                if (cell != null)
+                {
+                    cell.onErrorThrown += OnOccuredError;
+                    cell.onRecalculation += RecalculationForced;
+                }
+            }
         }
     }
 }

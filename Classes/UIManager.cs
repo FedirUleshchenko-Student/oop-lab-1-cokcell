@@ -124,11 +124,14 @@ namespace oop_lab_1_cokcell.Pages
             OpenNewTable();
         }
 
-        private void ForceCalculation()
+        private void TotalRecalculationSmart(bool isRebuilded = false)
         {
             var it = currentTable.GetEnummeratorCells;
             while (it.MoveNext())
-                it.Current.Value.Recalculate();
+                if (isRebuilded)
+                    it.Current.Value.RecalculationForced();
+                else
+                    it.Current.Value.Recalculate();
         }
 
         #region UpdateUI
@@ -275,7 +278,7 @@ namespace oop_lab_1_cokcell.Pages
             }
             else
             {
-                entry.Text = cell.Expression;
+                entry.Text = cell?.Expression ?? "";
             }
         }
 
@@ -295,14 +298,17 @@ namespace oop_lab_1_cokcell.Pages
             UpdateCellEntryBackgroundColor(entry);
         }
 
-        private void UpdateGridAll()
+        private void UpdateGridAll(bool isRebuilded = false)
         {
             if (viewMode == ViewModes.VALUE_MODE)
-                ForceCalculation();
-            var it = currentTable.GetEnummeratorCells;
-            while (it.MoveNext())
-                // Same as : it.Current.Value.Id
-                UpdateGridCell(it.Current.Key);
+            {
+                TotalRecalculationSmart(isRebuilded);
+            }
+
+            foreach (var cellId in entrys.Keys.ToList())
+            {
+                UpdateGridCell(cellId);
+            }
         }
 
         private void UpdateGridCellSmart(CellId id)
@@ -512,7 +518,7 @@ namespace oop_lab_1_cokcell.Pages
             _selectedEntry = null;
             BuildGridUI();
             selectedEntry = entrys[selectedCell];
-            UpdateGridAll();
+            UpdateGridAll(true);
         }
 
         private async void DeleteRow_Clicked(object sender, EventArgs e)
@@ -554,6 +560,7 @@ namespace oop_lab_1_cokcell.Pages
                     throw new Exception("Не всі знаки є числами");
 
                 currentTable.AddRow(targetRow);
+
                 fileState?.FlagChanges();
 
                 NewTableOverrideBypass();
@@ -624,7 +631,7 @@ namespace oop_lab_1_cokcell.Pages
         {
             if (viewMode == ViewModes.EXPRESSION_MODE)
             {
-                ForceCalculation();
+                //TotalRecalculationSmart();
                 viewMode = ViewModes.VALUE_MODE;
                 ModeLabel.Text = "Режим: ЗНАЧЕННЯ";
             }
