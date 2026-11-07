@@ -255,7 +255,7 @@ namespace oop_lab_1_cokcell.Classes.ExpressionNodes
         {
             BigInteger result = Arguments[0];
             foreach (var arg in Arguments)
-                result = BigInteger.Max(result, arg);
+                result = BigInteger.Min(result, arg);
 
             return result;
         }
