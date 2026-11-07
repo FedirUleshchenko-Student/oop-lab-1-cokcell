@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
 using oop_lab_1_cokcell.Classes.Cells;
+using oop_lab_1_cokcell.Classes.ExpressionNodes;
 using oop_lab_1_cokcell.Classes.Files;
 using System;
 using System.Collections.Generic;
@@ -40,9 +41,7 @@ namespace oop_lab_1_cokcell.Pages
 
                 // shit code
                 // for default text, not "" when selecting empty cell
-                var cell = currentTable.FindCell(uiCells[_selectedEntry]);
-                ValueOrErrorDisplay.Text = cell != null ?
-                cell.GetAbsoluteErrorSupportedValue() : "";
+                UpdateVOEDisplay(currentTable.FindCellSafe(uiCells[_selectedEntry]));
             }
         }
         private bool calculatingCurrentCell = false;
@@ -205,8 +204,7 @@ namespace oop_lab_1_cokcell.Pages
 
                             var cell = currentTable.FindCell(entryCellId);
                             FormulaBar.Text = cell != null ? cell.Expression : "";
-                            ValueOrErrorDisplay.Text = cell != null ?
-                            cell.GetAbsoluteErrorSupportedValue() : "";
+                            UpdateVOEDisplay(cell);
 
                             // Temp
                             entry.Text = cell != null ? cell.Expression : "";
@@ -268,21 +266,20 @@ namespace oop_lab_1_cokcell.Pages
             {
                 try
                 {
-                    entry.Text = cell?.GetValue().ToString();
-                    if (cell?.ErrorMessage?.Message.Length > 0)
-                        throw new Exception();
+                    entry.Text = (cell == null ||
+                    cell.parsedExpression == null ||
+                    cell.parsedExpression?.GetType() == typeof(Expression)) ?
+                    "" : cell?.GetValue().ToString();
                 }
-                catch (Exception)
-                {
+                catch(Exception e) { }
+                if (cell?.ErrorMessage?.Message.Length > 0)
                     entry.Text = "#ERROR";
-                }
             }
             else
             {
                 entry.Text = cell?.Expression ?? "";
             }
         }
-
 
         private void UpdateGridCell(CellId id)
         {
@@ -319,6 +316,13 @@ namespace oop_lab_1_cokcell.Pages
             else
                 UpdateGridCell(id);
         }
+
+        private void UpdateVOEDisplay(TableCell? cell){
+                ValueOrErrorDisplay.Text = (cell == null ||
+                //cell.parsedExpression == null ||
+                cell.parsedExpression?.GetType() == typeof(Expression)) ?
+                "" : cell?.GetAbsoluteErrorSupportedValue();
+        }
         #endregion
 
         #region OnFieldsTextChanged
@@ -340,8 +344,7 @@ namespace oop_lab_1_cokcell.Pages
             // NEED ??
             //FormulaBar.Text = cell != null ? cell.Expression : "";
             cell.SetExpression(expression, currentTable);
-            ValueOrErrorDisplay.Text = cell != null ?
-                cell.GetAbsoluteErrorSupportedValue() : "";
+            UpdateVOEDisplay(cell);
 
             UpdateGridCellSmart(cell.Id);
             fileState?.FlagChanges();

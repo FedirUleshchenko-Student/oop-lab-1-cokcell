@@ -213,6 +213,9 @@ namespace oop_lab_1_cokcell.Classes.Cells
             // Answer does not change without SetExpression
             try
             {
+                // Temp
+                //if (parsedExpression == null && Expression.Length != 0)
+                //    throw ErrorMessage ?? new Exception("Незрозумілий кусок тексту\nБудь-ласка, спробуйте знову");
                 CalculatedValue = parsedExpression ?? (BigInteger)0;
                 recalculationNeed = false;
                 ErrorMessage = null;
